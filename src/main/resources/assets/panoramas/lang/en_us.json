@@ -1,0 +1,16 @@
+{
+    "panoramas.error.io": "IOException occurred while creating pack.mcmeta file: %d",
+
+    "panoramas.pack_button.no_world_selected": "Please select a world",
+    "panoramas.pack_button.no_panorama": "In-game press %d key and a new panorama will appear here",
+
+    "panoramas.create.success": "Successfully created a new panorama at x%d resolution",
+
+    "text.autoconfig.panoramas.option.resolution": "Panorama resolution",
+    "text.autoconfig.panoramas.option.hidePanoramasRP": "Hide Panoramas Resourcepacks",
+    "text.autoconfig.panoramas.option.autoSetPanoramas": "Automatically set new panoramas",
+
+    "text.autoconfig.panoramas.title": "Panoramas Title",
+
+    "key.panoramas.create": "Create a New Panorama"
+}
