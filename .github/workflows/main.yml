@@ -1,0 +1,53 @@
+name: release-artifacts
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish_the_mod:
+    name: Publish To Modrinth and GitHub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Read and extract versions from gradle.properties
+        id: extract-versions
+        run: |
+          VERSION=$(grep 'mod_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          MINECRAFT_VERSION=$(grep 'minecraft_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "MINECRAFT_VERSION=${MINECRAFT_VERSION}" >> $GITHUB_ENV
+
+      - name: Build artifacts
+        run: ./gradlew clean build
+
+      - uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: JGYH59f7
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          github-tag: mc${{ env.MINECRAFT_VERSION }}-${{ env.VERSION }}
+          github-prerelease: true
+          github-token: ${{ secrets._GITHUB_TOKEN }}
+
+          name: Redstonery Mod ${{ env.VERSION }} for Minecraft ${{ env.MINECRAFT_VERSION }}
+          version: mc${{ env.MINECRAFT_VERSION }}-${{ env.VERSION }}
+          version-type: alpha
+          changelog-file: CHANGELOG.md
+
+          loaders: |
+            fabric
+          game-versions: |
+            ${{ env.MINECRAFT_VERSION }}
