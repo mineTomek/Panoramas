@@ -7,7 +7,7 @@
     "panoramas.create.success": "Successfully created a new panorama at x%d resolution",
 
     "text.autoconfig.panoramas.option.resolution": "Panorama resolution",
-    "text.autoconfig.panoramas.option.hidePanoramasRP": "Hide Panoramas Resourcepacks",
+    "text.autoconfig.panoramas.option.hidePanoramasRP": "Hide panoramas resourcepacks",
     "text.autoconfig.panoramas.option.autoSetPanoramas": "Automatically set new panoramas",
 
     "text.autoconfig.panoramas.title": "Panoramas Title",
