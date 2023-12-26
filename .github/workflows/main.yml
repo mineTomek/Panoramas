@@ -36,11 +36,11 @@ jobs:
       - uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: JGYH59f7
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-token: ${{ secrets.TOKEN_MODRINTH }}
 
           github-tag: mc${{ env.MINECRAFT_VERSION }}-${{ env.VERSION }}
           github-prerelease: true
-          github-token: ${{ secrets._GITHUB_TOKEN }}
+          github-token: ${{ secrets.TOKEN_GITHUB }}
 
           name: Redstonery Mod ${{ env.VERSION }} for Minecraft ${{ env.MINECRAFT_VERSION }}
           version: mc${{ env.MINECRAFT_VERSION }}-${{ env.VERSION }}
