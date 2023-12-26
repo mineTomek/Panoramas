@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.panoramas.Panoramas;
 import com.panoramas.PanoramasClient;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.gui.screen.world.WorldListWidget;
@@ -18,7 +19,9 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.ResourcePackProfile;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.level.storage.LevelSummary;
 
 @Mixin(SelectWorldScreen.class)
@@ -29,13 +32,15 @@ public class SelectWorldScreenMixin extends Screen {
 
     private ButtonWidget loadPanoramaButton;
 
+    private ButtonWidget removePanoramaButton;
+
     @Shadow
     private WorldListWidget levelList;
 
     @Inject(method = "init", at = @At("HEAD"))
     private void initInjected(CallbackInfo info) {
-        loadPanoramaButton = (ButtonWidget) addDrawableChild(
-                ButtonWidget.builder(Text.of("P"), button -> {
+        loadPanoramaButton = addDrawableChild(
+                ButtonWidget.builder(ScreenTexts.EMPTY, button -> {
                     try {
                         client.getResourcePackManager().enable("file/Panorama_"
                                 + ((LevelSummary) FieldUtils.readField(levelList.getSelectedOrNull(), "level"))
@@ -46,7 +51,7 @@ public class SelectWorldScreenMixin extends Screen {
                     }
                 }).dimensions(this.width / 2 + 82 + 72 + 4, this.height - 28, 20, 20).build());
 
-        addDrawableChild(ButtonWidget.builder(Text.of("R"), button -> {
+        removePanoramaButton = addDrawableChild(ButtonWidget.builder(ScreenTexts.EMPTY, button -> {
             ResourcePackManager manager = client.getResourcePackManager();
 
             for (ResourcePackProfile pack : manager.getProfiles()) {
@@ -76,12 +81,18 @@ public class SelectWorldScreenMixin extends Screen {
         }
     }
 
-    // @Inject(method = "render", at = @At("TAIL"))
-    // public void renderInjected(DrawContext context, int mouseX, int mouseY, float
-    // delta, CallbackInfo info) {
-    // context.drawGuiTexture(new Identifier("minecraft",
-    // "textures/gui/panoramas_button.png"), panoramaButton.getX(),
-    // panoramaButton.getY(), panoramaButton.getWidth(),
-    // panoramaButton.getHeight());
-    // }
+    @Inject(method = "render", at = @At("TAIL"))
+    public void renderInjected(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo info) {
+        Identifier loadPanoramasButtonTextureLocation = new Identifier(Panoramas.MOD_ID, "load_panoramas_button");
+
+        context.drawGuiTexture(loadPanoramasButtonTextureLocation, loadPanoramaButton.getX(),
+                loadPanoramaButton.getY(), loadPanoramaButton.getWidth(),
+                loadPanoramaButton.getHeight());
+
+        Identifier removePanoramasButtonTextureLocation = new Identifier(Panoramas.MOD_ID, "remove_panoramas_button");
+
+        context.drawGuiTexture(removePanoramasButtonTextureLocation, removePanoramaButton.getX(),
+                removePanoramaButton.getY(), removePanoramaButton.getWidth(),
+                removePanoramaButton.getHeight());
+    }
 }
