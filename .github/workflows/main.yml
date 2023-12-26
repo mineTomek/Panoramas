@@ -45,7 +45,7 @@ jobs:
           name: Redstonery Mod ${{ env.VERSION }} for Minecraft ${{ env.MINECRAFT_VERSION }}
           version: mc${{ env.MINECRAFT_VERSION }}-${{ env.VERSION }}
           version-type: alpha
-          changelog-file: CHANGELOG.md
+          changelog-file: CHANGELOG_NEWEST.md
 
           loaders: |
             fabric
