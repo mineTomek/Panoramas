@@ -49,7 +49,7 @@ public class SelectWorldScreenMixin extends Screen {
                     } catch (Exception e) {
                         Panoramas.LOGGER.error(e.getMessage());
                     }
-                }).dimensions(this.width / 2 + 82 + 72 + 4, this.height - 28, 20, 20).build());
+                }).dimensions(this.width / 2 + 158, this.height - 28, 20, 20).build());
 
         removePanoramaButton = addDrawableChild(ButtonWidget.builder(ScreenTexts.EMPTY, button -> {
             ResourcePackManager manager = client.getResourcePackManager();
@@ -61,7 +61,7 @@ public class SelectWorldScreenMixin extends Screen {
             }
 
             client.options.refreshResourcePacks(manager);
-        }).dimensions(this.width / 2 + 82 + 72 + 20 + 8, this.height - 28, 20, 20).build());
+        }).dimensions(this.width / 2 + 182, this.height - 28, 20, 20).build());
     }
 
     @Inject(method = "worldSelected", at = @At("TAIL"))
