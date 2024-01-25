@@ -32,6 +32,10 @@ bin/
 
 run/
 
+# server
+
+server/
+
 # java
 
 hs_err_*.log
