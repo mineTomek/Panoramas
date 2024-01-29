@@ -37,8 +37,17 @@ public class PanoramasClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (createPanorama.wasPressed()) {
-				String resourcepackBaseName = "Panorama_"
-						+ client.getServer().getSavePath(WorldSavePath.ROOT).getParent().getFileName().toString();
+				ModConfig config = GetConfig();
+
+				String levelName = null;
+
+				if (client.isInSingleplayer()) {
+					levelName = client.getServer().getSavePath(WorldSavePath.ROOT).getParent().getFileName().toString();
+				} else {
+					levelName = client.getCurrentServerEntry().address;
+				}
+
+				String resourcepackBaseName = "Panorama_" + levelName;
 
 				if (FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
 						+ resourcepackBaseName)
@@ -53,8 +62,6 @@ public class PanoramasClient implements ClientModInitializer {
 								+ "/assets/minecraft/textures/gui/title/background");
 
 				panoramasPath.toFile().mkdirs();
-
-				ModConfig config = GetConfig();
 
 				try {
 					int resolution = config.resolution;
