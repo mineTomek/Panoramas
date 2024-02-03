@@ -2,7 +2,11 @@
 	"required": true,
 	"package": "com.panoramas.mixin.client",
 	"compatibilityLevel": "JAVA_17",
-	"client": ["PackScreenMixin", "SelectWorldScreenMixin"],
+	"client": [
+		"PackScreenMixin",
+		"SelectWorldScreenMixin",
+		"MultiplayerScreenMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}

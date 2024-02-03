@@ -4,18 +4,23 @@ import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Path;
 
+import java.util.Collection;
+
 import org.apache.commons.io.FileUtils;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.gson.Gson;
+
 import com.panoramas.config.ModConfig;
 
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.pack.PackListWidget.ResourcePackEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.ScreenshotRecorder;
+import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.text.Text;
 import net.minecraft.util.WorldSavePath;
@@ -32,8 +37,17 @@ public class PanoramasClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (createPanorama.wasPressed()) {
-				String resourcepackBaseName = "Panorama_"
-						+ client.getServer().getSavePath(WorldSavePath.ROOT).getParent().getFileName().toString();
+				ModConfig config = GetConfig();
+
+				String levelName = null;
+
+				if (client.isInSingleplayer()) {
+					levelName = client.getServer().getSavePath(WorldSavePath.ROOT).getParent().getFileName().toString();
+				} else {
+					levelName = client.getCurrentServerEntry().address;
+				}
+
+				String resourcepackBaseName = "Panorama_" + levelName;
 
 				if (FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
 						+ resourcepackBaseName)
@@ -48,8 +62,6 @@ public class PanoramasClient implements ClientModInitializer {
 								+ "/assets/minecraft/textures/gui/title/background");
 
 				panoramasPath.toFile().mkdirs();
-
-				ModConfig config = GetConfig();
 
 				try {
 					int resolution = config.resolution;
@@ -125,6 +137,40 @@ public class PanoramasClient implements ClientModInitializer {
 		File panoramasIdentifier = FabricLoader.getInstance().getGameDir()
 				.resolve("resourcepacks/" + packName.replace("file/", "") + "/.panoramas").toFile();
 		return panoramasIdentifier.exists();
+	}
+
+	public static boolean isAnyPanoramasResourcePackLoaded() {
+		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
+
+		Collection<String> enabedPacks = manager.getEnabledNames();
+
+		for (String pack : enabedPacks) {
+			if (FabricLoader.getInstance().getGameDir()
+					.resolve("resourcepacks/" + pack.replace("file/", "") + "/.panoramas")
+					.toFile().exists()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isPanoramasResourcePackLoaded(String packName) {
+		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
+
+		Collection<String> enabedPacks = manager.getEnabledNames();
+
+		for (String pack : enabedPacks) {
+			if (pack.replace("file/", "") != packName) continue;
+
+			if (FabricLoader.getInstance().getGameDir()
+					.resolve("resourcepacks/" + pack.replace("file/", "") + "/.panoramas")
+					.toFile().exists()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static ModConfig GetConfig() {

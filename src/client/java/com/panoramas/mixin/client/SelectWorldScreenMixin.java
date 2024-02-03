@@ -94,5 +94,7 @@ public class SelectWorldScreenMixin extends Screen {
         context.drawGuiTexture(removePanoramasButtonTextureLocation, removePanoramaButton.getX(),
                 removePanoramaButton.getY(), removePanoramaButton.getWidth(),
                 removePanoramaButton.getHeight());
+
+        removePanoramaButton.active = PanoramasClient.isAnyPanoramasResourcePackLoaded();
     }
 }
