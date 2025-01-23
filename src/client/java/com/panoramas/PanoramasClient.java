@@ -2,6 +2,7 @@ package com.panoramas;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import java.util.Collection;
@@ -23,6 +24,8 @@ import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -47,14 +50,20 @@ public class PanoramasClient implements ClientModInitializer {
 					levelName = client.getCurrentServerEntry().address;
 				}
 
-				String resourcepackBaseName = "Panorama_" + levelName;
+				levelName = Util.replaceInvalidChars(levelName, Identifier::isPathCharacterValid);
 
-				if (FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
-						+ resourcepackBaseName)
-						.toFile().exists()) {
-					FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
+				String resourcepackBaseName = "Panorama_" + levelName; // TODO: PathUtil.getNextUniqueName
+
+				try {
+					if (FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
 							+ resourcepackBaseName)
-							.toFile().delete();
+							.toFile().exists()) {
+						FileUtils.deleteDirectory(FabricLoader.getInstance().getGameDir().resolve("resourcepacks/"
+								+ resourcepackBaseName)
+								.toFile());
+					}
+				} catch (IOException exception) {
+					Panoramas.LOGGER.error("Failed to delete the previous panorama", exception);
 				}
 
 				Path panoramasPath = FabricLoader.getInstance().getGameDir()
@@ -64,6 +73,27 @@ public class PanoramasClient implements ClientModInitializer {
 				panoramasPath.toFile().mkdirs();
 
 				try {
+					Path resourcePackPath = FabricLoader.getInstance().getGameDir()
+							.resolve("resourcepacks/" + resourcepackBaseName);
+
+					// client.gameRenderer.setRenderingPanorama(true); // TODO: Hiding the UI still doesn't work :(
+					// client.worldRenderer.reloadTransparencyPostProcessor();
+
+					// int framebufferWidth = client.getWindow().getFramebufferWidth();
+					// int framebufferHeight = client.getWindow().getFramebufferHeight();
+
+					// client.getWindow().setFramebufferWidth(PanoramaIcon.ICON_WIDTH);
+					// client.getWindow().setFramebufferHeight(PanoramaIcon.ICON_HEIGHT);
+
+					ScreenshotRecorder.takeScreenshot(client.getFramebuffer())
+							.writeTo(resourcePackPath.resolve("pack.png"));
+
+					// client.getWindow().setFramebufferWidth(framebufferWidth);
+					// client.getWindow().setFramebufferHeight(framebufferHeight);
+
+					// client.gameRenderer.setRenderingPanorama(false);
+					// client.worldRenderer.reloadTransparencyPostProcessor();
+
 					int resolution = config.resolution;
 
 					final int size = client.getWindow().getHeight() * resolution;
@@ -84,9 +114,6 @@ public class PanoramasClient implements ClientModInitializer {
 
 					panoramasPath.resolve("screenshots").toFile().delete();
 
-					Path resourcePackPath = FabricLoader.getInstance().getGameDir()
-							.resolve("resourcepacks/" + resourcepackBaseName);
-
 					resourcePackPath.toFile().mkdirs();
 
 					FileWriter mcmeta = new FileWriter(resourcePackPath.resolve("pack.mcmeta").toString());
@@ -104,15 +131,22 @@ public class PanoramasClient implements ClientModInitializer {
 
 					FileWriter panoramasFile = new FileWriter(resourcePackPath.resolve(".panoramas").toString());
 
-					panoramasFile.write(".panoramas");
+					PanoramaMetadata panoramaMetadata = new PanoramaMetadata(levelName);
+
+					panoramasFile.write(new Gson().toJson(panoramaMetadata));
 
 					panoramasFile.close();
 
-					ScreenshotRecorder.takeScreenshot(client.getFramebuffer())
-							.writeTo(resourcePackPath.resolve("pack.png"));
+					// String fileName = "panorama_0.png";
+					// File source = panoramasPath.resolve(fileName).toFile();
+					// File destination = FabricLoader.getInstance().getGameDir()
+					// .resolve("resourcepacks").resolve(resourcepackBaseName).resolve("pack.png").toFile();
+
+					// FileUtils.copyFile(source, destination);
+
+					// destination.toPath().resolve(fileName).toFile().renameTo(destination.toPath().resolve("pack.png").toFile());
 				} catch (Exception e) {
-					client.player.sendMessage(Text.translatable("panoramas.error.io", e.getMessage()));
-					Panoramas.LOGGER.error("IOException occurred while creating pack.mcmeta file: " + e.getMessage());
+					Panoramas.LOGGER.error(e.getMessage());
 				}
 
 				if (config.autoSetPanoramas) {
@@ -142,9 +176,9 @@ public class PanoramasClient implements ClientModInitializer {
 	public static boolean isAnyPanoramasResourcePackLoaded() {
 		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
 
-		Collection<String> enabedPacks = manager.getEnabledNames();
+		Collection<String> enabledPacks = manager.getEnabledNames();
 
-		for (String pack : enabedPacks) {
+		for (String pack : enabledPacks) {
 			if (FabricLoader.getInstance().getGameDir()
 					.resolve("resourcepacks/" + pack.replace("file/", "") + "/.panoramas")
 					.toFile().exists()) {
@@ -158,10 +192,11 @@ public class PanoramasClient implements ClientModInitializer {
 	public static boolean isPanoramasResourcePackLoaded(String packName) {
 		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
 
-		Collection<String> enabedPacks = manager.getEnabledNames();
+		Collection<String> enabledPacks = manager.getEnabledNames();
 
-		for (String pack : enabedPacks) {
-			if (pack.replace("file/", "") != packName) continue;
+		for (String pack : enabledPacks) {
+			if (pack.replace("file/", "") != packName)
+				continue;
 
 			if (FabricLoader.getInstance().getGameDir()
 					.resolve("resourcepacks/" + pack.replace("file/", "") + "/.panoramas")
